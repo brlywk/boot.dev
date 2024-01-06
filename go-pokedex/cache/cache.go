@@ -6,17 +6,20 @@ import (
 	"time"
 )
 
+// Cache entry with creation time (for cleanup) and raw fetched data
 type cacheEntry struct {
 	createdAt time.Time
 	raw       []byte
 }
 
+// Cache api calls and specify cleanup interval
 type Cache struct {
 	Entries  map[string]cacheEntry
 	interval time.Duration
 	mutex    sync.Mutex
 }
 
+// Create a new cache with a cleanup interval
 func NewCache(interval time.Duration) Cache {
 	return Cache{
 		Entries:  map[string]cacheEntry{},
@@ -24,6 +27,7 @@ func NewCache(interval time.Duration) Cache {
 	}
 }
 
+// Add a new kv pair to our Cache
 func (c *Cache) Add(key string, value []byte) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -34,6 +38,7 @@ func (c *Cache) Add(key string, value []byte) {
 	}
 }
 
+// Retreive a cache entry (and returns if found)
 func (c *Cache) Get(key string) ([]byte, bool) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -42,6 +47,10 @@ func (c *Cache) Get(key string) ([]byte, bool) {
 	return e.raw, found
 }
 
+// Cleanup loop that checks age of cache entries and removes
+// entries older than Cache.interval
+//
+// Run this function in a goroutine!
 func (c *Cache) CleanupLoop() {
 	ticker := time.NewTicker(c.interval)
 	defer ticker.Stop()

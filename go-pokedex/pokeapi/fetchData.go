@@ -21,6 +21,8 @@ func FetchExplorationData(url string, area string, cache *cache.Cache) (Explorat
 }
 
 // Fetches Data and creates response struct
+//
+// Checks if url has already been fetched and returns fetched data if available
 func FetchData[T any](url string, cache *cache.Cache) (T, error) {
 	var resp T
 	var err error

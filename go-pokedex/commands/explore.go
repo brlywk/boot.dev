@@ -6,13 +6,13 @@ import (
 	"fmt"
 )
 
+// Explore a single area and print all pokemon encounters in that area
 func CommandExplore(config *pokeapi.ApiConfig, areaName string) error {
 	if areaName == "" {
 		return errors.New("Please provide an area to explore")
 	}
 
-	explorationApi := fmt.Sprintf("%v/%v", config.BaseUrl, config.LocationPath)
-	resp, err := pokeapi.FetchExplorationData(explorationApi, areaName, config.Cache)
+	resp, err := pokeapi.FetchExplorationData(config.LocationAreaUrl, areaName, config.Cache)
 	if err != nil {
 		return err
 	}

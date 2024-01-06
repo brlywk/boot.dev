@@ -2,10 +2,11 @@ package pokeapi
 
 import "brlywk/bootdev/pokedex/cache"
 
+// ----- Config ----------------------------------
+
 // Hold info about where to start fetching
 type ApiConfig struct {
-	BaseUrl          string
-	LocationPath     string
+	LocationAreaUrl  string
 	NextLocation     string
 	PreviousLocation string
 	Cache            *cache.Cache

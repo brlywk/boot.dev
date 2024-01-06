@@ -12,7 +12,6 @@ import (
 )
 
 const (
-	apiUrl      = "https://pokeapi.co/api/v2/location-area"
 	promptColor = "\033[38;5;124m"
 	promptReset = "\033[0m"
 )
@@ -20,19 +19,21 @@ const (
 // ----- Main ------------------------------------
 
 func main() {
+	// Initialise cache and start cleanup loop
 	cache := cache.NewCache(20 * time.Second)
 	go cache.CleanupLoop()
 
 	config := pokeapi.ApiConfig{
-		BaseUrl:          "https://pokeapi.co/api/v2",
-		LocationPath:     "location-area",
-		NextLocation:     apiUrl,
+		LocationAreaUrl:  "https://pokeapi.co/api/v2/location-area",
+		NextLocation:     "https://pokeapi.co/api/v2/location-area",
 		PreviousLocation: "",
 		Cache:            &cache,
 	}
+
 	commandList := commands.GetCommands()
 
 	scanner := bufio.NewScanner(os.Stdin)
+
 	for {
 		fmt.Printf("%vpokedex > %v", promptColor, promptReset)
 		scanner.Scan()
@@ -50,6 +51,7 @@ func main() {
 	}
 }
 
+// Parse user input and split into command and parameter
 func parseInput(input string) (string, string) {
 	fields := strings.Fields(strings.ToLower(input))
 

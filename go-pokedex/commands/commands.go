@@ -4,6 +4,7 @@ import "brlywk/bootdev/pokedex/pokeapi"
 
 // ----- Structs ---------------------------------
 
+// Commands executable by the user
 type CliCommand struct {
 	Name        string
 	Description string
