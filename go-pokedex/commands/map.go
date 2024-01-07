@@ -19,7 +19,7 @@ func CommandMap(config *pokeapi.ApiConfig, _ string) error {
 	config.PreviousLocation = resp.Previous
 
 	for _, location := range resp.Results {
-		fmt.Println(location.Name)
+		fmt.Printf("\t %v\n", location.Name)
 	}
 
 	return nil

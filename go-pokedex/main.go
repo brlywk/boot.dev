@@ -4,16 +4,12 @@ import (
 	"brlywk/bootdev/pokedex/cache"
 	"brlywk/bootdev/pokedex/commands"
 	"brlywk/bootdev/pokedex/pokeapi"
+	"brlywk/bootdev/pokedex/utils"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
 	"time"
-)
-
-const (
-	promptColor = "\033[38;5;124m"
-	promptReset = "\033[0m"
 )
 
 // ----- Main ------------------------------------
@@ -25,9 +21,11 @@ func main() {
 
 	config := pokeapi.ApiConfig{
 		LocationAreaUrl:  "https://pokeapi.co/api/v2/location-area",
+		PokemonUrl:       "https://pokeapi.co/api/v2/pokemon",
 		NextLocation:     "https://pokeapi.co/api/v2/location-area",
 		PreviousLocation: "",
 		Cache:            &cache,
+		CaughtPokemon:    &map[string]pokeapi.PokemonResponse{},
 	}
 
 	commandList := commands.GetCommands()
@@ -35,7 +33,7 @@ func main() {
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
-		fmt.Printf("%vpokedex > %v", promptColor, promptReset)
+		fmt.Printf("%vpokedex > %v", utils.PromptColorOrange, utils.PromptColorReset)
 		scanner.Scan()
 
 		input := scanner.Text()

@@ -1,15 +1,19 @@
 package pokeapi
 
-import "brlywk/bootdev/pokedex/cache"
+import (
+	"brlywk/bootdev/pokedex/cache"
+)
 
 // ----- Config ----------------------------------
 
 // Hold info about where to start fetching
 type ApiConfig struct {
 	LocationAreaUrl  string
+	PokemonUrl       string
 	NextLocation     string
 	PreviousLocation string
 	Cache            *cache.Cache
+	CaughtPokemon    *map[string]PokemonResponse
 }
 
 // ----- Locations -------------------------------
@@ -38,4 +42,30 @@ type ExplorationResponse struct {
 			Name string `json:"name"`
 		} `json:"pokemon"`
 	} `json:"pokemon_encounters"`
+}
+
+// ----- Catch Pokemon ---------------------------
+
+type PokemonResponse struct {
+	Id             int    `json:"id"`
+	Name           string `json:"name"`
+	BaseExperience int    `json:"base_experience"`
+	Height         int    `json:"height"`
+	Weight         int    `json:"weight"`
+	Stats          []struct {
+		BaseStat int `json:"base_stat"`
+		Stat     struct {
+			Name string `json:"name"`
+		} `json:"stat"`
+	}
+	Abilities []struct {
+		Ability struct {
+			Name string `json:"name"`
+		} `json:"ability"`
+	} `json:"abilities"`
+	Types []struct {
+		Type struct {
+			Name string `json:"name"`
+		} `json:"type"`
+	} `json:"types"`
 }

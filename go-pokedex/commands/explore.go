@@ -18,7 +18,7 @@ func CommandExplore(config *pokeapi.ApiConfig, areaName string) error {
 	}
 
 	for _, encounter := range resp.Encounters {
-		fmt.Println(encounter.Pokemon.Name)
+		fmt.Printf("\t %v\n", encounter.Pokemon.Name)
 	}
 
 	return nil

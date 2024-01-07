@@ -39,5 +39,20 @@ func GetCommands() map[string]CliCommand {
 			Description: "Explore an area.\n\tUse 'explore <area name>' to select which area.\n\n\tExample:\texplore canalave-city",
 			Callback:    CommandExplore,
 		},
+		"catch": {
+			Name:        "catch",
+			Description: "Attempt to catch a Pokemon.\n\tUse 'catch <name>' to select Pokemon.\n\n\tExample:\tcatch pikachu",
+			Callback:    CommandCatch,
+		},
+		"inspect": {
+			Name:        "inspect",
+			Description: "Inspect a Pokemon.\n\tUse 'inspect <name>' to select Pokemon.\n\n\tExample:\tinspect pikachu",
+			Callback:    CommandInspect,
+		},
+		"pokedex": {
+			Name:        "pokedex",
+			Description: "View your current Pokedex (all Pokemon you have caught so far.)",
+			Callback:    CommandPokedex,
+		},
 	}
 }

@@ -56,9 +56,6 @@ func (c *Cache) CleanupLoop() {
 	defer ticker.Stop()
 
 	for t := range ticker.C {
-		fmt.Println("\n\tTime to clean up a little bit!")
-		// fmt.Printf("\n\tCache:\n%v\n", c)
-
 		c.mutex.Lock()
 
 		cleanKeys := []string{}

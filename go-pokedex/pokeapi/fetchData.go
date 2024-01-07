@@ -20,6 +20,13 @@ func FetchExplorationData(url string, area string, cache *cache.Cache) (Explorat
 	return FetchData[ExplorationResponse](locationUrl, cache)
 }
 
+// Fetch Pokemon infos
+func FetchPokemonData(url string, pokemon string, cache *cache.Cache) (PokemonResponse, error) {
+	pokemonUrl := fmt.Sprintf("%v/%v", url, pokemon)
+
+	return FetchData[PokemonResponse](pokemonUrl, cache)
+}
+
 // Fetches Data and creates response struct
 //
 // Checks if url has already been fetched and returns fetched data if available
