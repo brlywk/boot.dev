@@ -22,3 +22,9 @@ go.work
 
 # macOS
 .DS_Store
+
+# temporary files
+tmp/
+
+# database file for webserver lesson
+database.json
