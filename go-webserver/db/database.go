@@ -2,10 +2,8 @@ package db
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 	"os"
-	"sort"
 	"sync"
 )
 
@@ -21,8 +19,14 @@ type Chirp struct {
 	Body string `json:"body"`
 }
 
+type User struct {
+	Id    int    `json:"id"`
+	Email string `json:"email"`
+}
+
 type DBStructure struct {
 	Chirps map[int]Chirp `json:"chirps"`
+	Users  map[int]User  `json:"users"`
 }
 
 // ----- Methods ---------------------------------
@@ -41,75 +45,6 @@ func NewDB(path string) (*DB, error) {
 	}
 
 	return &db, nil
-}
-
-func (db *DB) CreateChirp(body string) (Chirp, error) {
-	db.mutex.Lock()
-	defer db.mutex.Unlock()
-
-	log.Println("\nCreating Chirp")
-
-	dbstruct, err := db.loadDB()
-	if err != nil {
-		return Chirp{}, err
-	}
-
-	newId := len(dbstruct.Chirps) + 1
-
-	chirp := Chirp{
-		Id:   newId,
-		Body: body,
-	}
-
-	dbstruct.Chirps[newId] = chirp
-
-	err = db.persist(dbstruct)
-	if err != nil {
-		return Chirp{}, err
-	}
-
-	return chirp, nil
-}
-
-func (db *DB) GetChirps() ([]Chirp, error) {
-	db.mutex.RLock()
-	defer db.mutex.RUnlock()
-
-	dbstruct, err := db.loadDB()
-	if err != nil {
-		return []Chirp{}, err
-	}
-
-	sortedChirps := []Chirp{}
-
-	for _, c := range dbstruct.Chirps {
-		sortedChirps = append(sortedChirps, c)
-	}
-
-	sort.Slice(sortedChirps, func(i, j int) bool {
-		return j > i
-	})
-
-	return sortedChirps, nil
-}
-
-func (db *DB) GetChirp(id int) (Chirp, error) {
-	db.mutex.RLock()
-	defer db.mutex.RUnlock()
-
-	chirp := Chirp{}
-
-	dbstruct, err := db.loadDB()
-	if err != nil {
-		return chirp, err
-	}
-
-	chirp, ok := dbstruct.Chirps[id]
-	if !ok {
-		return chirp, fmt.Errorf("No chirp found with id: %v", id)
-	}
-
-	return chirp, nil
 }
 
 // ----- Helper ----------------------------------
@@ -131,6 +66,7 @@ func (db *DB) spawnDB() error {
 func (db *DB) loadDB() (DBStructure, error) {
 	dbStruct := DBStructure{
 		Chirps: map[int]Chirp{},
+		Users:  map[int]User{},
 	}
 
 	fileData, err := os.ReadFile(db.path)

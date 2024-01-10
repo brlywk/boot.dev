@@ -2,12 +2,12 @@ package routes
 
 // ----- Types -----------------------------------
 
-type RequestBody struct {
+type ChirpRequestBody struct {
 	Body string `json:"body"`
 }
 
-type CleanResponse struct {
-	CleanedBody string `json:"cleaned_body"`
+type UserRequestBody struct {
+	Email string `json:"email"`
 }
 
 type MetricsConfig struct {
