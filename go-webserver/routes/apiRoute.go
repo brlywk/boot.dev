@@ -1,8 +1,7 @@
 package routes
 
 import (
-	"brlywk/bootdev/webserver/db"
-	"log"
+	"brlywk/bootdev/webserver/config"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -18,18 +17,14 @@ var badWords = []string{
 	"fornax",
 }
 
-var jsonDB *db.DB
+var apiConfig config.ApiConfig
 
 // ----- Create Router ---------------------------
 
-func CreateApiRouter(dbPath string) chi.Router {
+func CreateApiRouter(cfg config.ApiConfig) chi.Router {
 	r := chi.NewRouter()
 
-	var err error
-	jsonDB, err = db.NewDB(dbPath)
-	if err != nil {
-		log.Fatalf("Database Error: %v\n", err)
-	}
+	apiConfig = cfg
 
 	// GET		/healthz
 	r.Get("/healthz", healthStatusHandler)
@@ -40,11 +35,24 @@ func CreateApiRouter(dbPath string) chi.Router {
 	r.Get("/chirps/{chirpid}", getChirpByIdHandler)
 	// POST		/chirps
 	r.Post("/chirps", postChirpHandler)
-
-	// GET		/users
+	// DELETE	/chirps
+	r.Delete("/chirps/{chirpid}", deleteChirpHandler)
 
 	// POST		/users
 	r.Post("/users", postUserHandler)
+	// PUT		/users
+	r.Put("/users", putUserHandler)
+
+	// POST		/login
+	r.Post("/login", postLoginHandler)
+
+	// POST		/refresh
+	r.Post("/refresh", postRefreshHandler)
+	// POST		/revoke
+	r.Post("/revoke", postRevokeHandler)
+
+	// POST		/polka/webhooks
+	r.Post("/polka/webhooks", postPolkaWebhookHandler)
 
 	return r
 }

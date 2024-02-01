@@ -20,6 +20,8 @@ func RespondWithError(w http.ResponseWriter, code int, msg string) {
 		Error: msg,
 	}
 
+	log.Printf("An error occured: %v", msg)
+
 	RespondWithJson(w, code, errResp)
 }
 

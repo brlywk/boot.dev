@@ -6,7 +6,8 @@ import (
 	"sort"
 )
 
-func (db *DB) CreateChirp(body string) (Chirp, error) {
+// Create a new chirp and save it in the database
+func (db *DB) CreateChirp(body string, authorId int) (Chirp, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
 
@@ -20,8 +21,9 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	newId := len(dbstruct.Chirps) + 1
 
 	chirp := Chirp{
-		Id:   newId,
-		Body: body,
+		Id:       newId,
+		Body:     body,
+		AuthorId: authorId,
 	}
 
 	dbstruct.Chirps[newId] = chirp
@@ -34,6 +36,7 @@ func (db *DB) CreateChirp(body string) (Chirp, error) {
 	return chirp, nil
 }
 
+// Retrieves all chirps from the database
 func (db *DB) GetChirps() ([]Chirp, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
@@ -56,6 +59,7 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 	return sortedChirps, nil
 }
 
+// Retreives a single chirp from the database
 func (db *DB) GetChirp(id int) (Chirp, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
@@ -73,4 +77,32 @@ func (db *DB) GetChirp(id int) (Chirp, error) {
 	}
 
 	return chirp, nil
+}
+
+func (db *DB) DeleteChirp(id int, authorId int) error {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	dbstruct, err := db.loadDB()
+	if err != nil {
+		return err
+	}
+
+	chirp, ok := dbstruct.Chirps[id]
+	if !ok {
+		return fmt.Errorf("No chirp found with id: %v", id)
+	}
+
+	if chirp.AuthorId != authorId {
+		return fmt.Errorf("You are not allowed to delete this chirp")
+	}
+
+	delete(dbstruct.Chirps, id)
+
+	err = db.persist(dbstruct)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

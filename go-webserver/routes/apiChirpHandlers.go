@@ -12,8 +12,16 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
+// ----- Types -----------------------------------
+
+type ChirpRequestBody struct {
+	Body string `json:"body"`
+}
+
+// ----- Handlers --------------------------------
+
 func getAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	chirps, err := jsonDB.GetChirps()
+	chirps, err := apiConfig.Db.GetChirps()
 	log.Printf("Chirps loaded: %v", chirps)
 
 	if err != nil {
@@ -33,7 +41,7 @@ func getChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	chirp, err := jsonDB.GetChirp(id)
+	chirp, err := apiConfig.Db.GetChirp(id)
 	if err != nil {
 		helper.RespondWithError(w, http.StatusNotFound, err.Error())
 		return
@@ -43,17 +51,29 @@ func getChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func postChirpHandler(w http.ResponseWriter, r *http.Request) {
+	token, err := helper.GetToken(r, &apiConfig)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	user, err := helper.ValidateTokenAccess(token, &apiConfig)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
 	jsonDecoder := json.NewDecoder(r.Body)
 
 	reqBody := ChirpRequestBody{}
 
-	err := jsonDecoder.Decode(&reqBody)
+	err = jsonDecoder.Decode(&reqBody)
 	if err != nil {
 		helper.RespondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
 
-	newChirp, err := jsonDB.CreateChirp(reqBody.Body)
+	newChirp, err := apiConfig.Db.CreateChirp(reqBody.Body, user.Id)
 	if err != nil {
 		log.Printf("Error: %v", err)
 		helper.RespondWithError(w, http.StatusInternalServerError, "Something went wrong")
@@ -68,6 +88,35 @@ func postChirpHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	helper.RespondWithJson(w, http.StatusCreated, newChirp)
+}
+
+func deleteChirpHandler(w http.ResponseWriter, r *http.Request) {
+	token, err := helper.GetToken(r, &apiConfig)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	user, err := helper.ValidateTokenAccess(token, &apiConfig)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	strId := chi.URLParam(r, "chirpid")
+	chirpId, err := strconv.Atoi(strId)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusBadRequest, "Id must be a number")
+		return
+	}
+
+	err = apiConfig.Db.DeleteChirp(chirpId, user.Id)
+	if err != nil {
+		helper.RespondWithError(w, http.StatusForbidden, err.Error())
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 // ----- Helpers ---------------------------------

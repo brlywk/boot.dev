@@ -28,3 +28,6 @@ tmp/
 
 # database file for webserver lesson
 database.json
+
+# environment files
+.env
