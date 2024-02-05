@@ -39,10 +39,11 @@ func postUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	newUser, err := apiConfig.Db.CreateUser(reqBody.Email, reqBody.Password)
 	if err != nil {
-		log.Printf("Error: %v", err)
 		helper.RespondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
+
+	log.Printf("[postUserHandler] User created: %v", newUser)
 
 	userResponse := UserResponseBody{
 		ID:          newUser.Id,
@@ -62,16 +63,12 @@ func putUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Token: %v", token.Raw)
-
 	// check token type and reject if refresh token
 	issuer, err := token.Claims.GetIssuer()
 	if err != nil {
 		helper.RespondWithError(w, http.StatusUnauthorized, err.Error())
 		return
 	}
-
-	log.Printf("Token issuer: %v", issuer)
 
 	if issuer != apiConfig.TokenSettings.AccessIssuer {
 		helper.RespondWithError(w, http.StatusUnauthorized, "Incorrect token type")
@@ -106,7 +103,6 @@ func putUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	updatedUser, err := apiConfig.Db.UpdateUser(userChanged)
-	log.Printf("User updated:  %v", updatedUser)
 	if err != nil {
 		helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return

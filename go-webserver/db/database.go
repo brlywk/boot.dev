@@ -2,7 +2,6 @@ package db
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"sync"
 	"time"
@@ -77,14 +76,12 @@ func (db *DB) loadDB() (DBStructure, error) {
 
 	fileData, err := os.ReadFile(db.path)
 	if err != nil {
-		log.Println("Error reading content of database file")
 		return dbStruct, err
 	}
 
 	// if the database did not exist, we need to to provide
 	// some minimal valid json to the unmarshaller...
 	if len(fileData) < 1 {
-		log.Println("Empty file found")
 		fileData = []byte(string("{}"))
 	}
 

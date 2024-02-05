@@ -14,8 +14,12 @@ import (
 )
 
 func GetAuthInfo(r *http.Request, prefix string) string {
+	log.Printf("[GetAuthInfo] Request: %v", r.URL)
+	log.Printf("[GetAuthInfo] Prefix: %v", prefix)
 	authHeader := r.Header.Get("Authorization")
+	log.Printf("[GetAuthInfo] Auth Header: %v", authHeader)
 	if authHeader == "" {
+		log.Printf("[GetAuthInfo] No authorization header found")
 		return ""
 	}
 
@@ -35,16 +39,6 @@ func GetAuthInfo(r *http.Request, prefix string) string {
 func GetToken(r *http.Request, apiConfig *config.ApiConfig) (*jwt.Token, error) {
 	claim := jwt.RegisteredClaims{}
 	errToken := jwt.Token{}
-
-	// authHeader := r.Header.Get("Authorization")
-	// if authHeader == "" {
-	// 	return &errToken, fmt.Errorf("No authorization header present")
-	// }
-	//
-	// tokenString, found := strings.CutPrefix(authHeader, "Bearer ")
-	// if !found {
-	// 	return &errToken, fmt.Errorf("No bearer token found")
-	// }
 
 	tokenString := GetAuthInfo(r, "Bearer")
 	if tokenString == "" {
@@ -80,6 +74,8 @@ func CreateToken(secret []byte, userId int, issuer string, expiresIn time.Durati
 		return "", err
 	}
 
+	log.Printf("[CreateToken] Token created: \n\t\t\t%v", tokenString)
+
 	return tokenString, nil
 }
 
@@ -92,8 +88,6 @@ func ValidateTokenAccess(token *jwt.Token, cfg *config.ApiConfig) (db.User, erro
 	if err != nil {
 		return user, err
 	}
-
-	log.Printf("Token issuer: %v", issuer)
 
 	if issuer != cfg.TokenSettings.AccessIssuer {
 		return user, fmt.Errorf("Invalid token type")

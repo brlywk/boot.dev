@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"golang.org/x/crypto/bcrypt"
@@ -114,9 +113,6 @@ func (db *DB) UpdateUser(u User) (User, error) {
 		return user, fmt.Errorf("no user exists with email '%v'", u.Email)
 	}
 
-	log.Printf("\tpassword currently in user: %v", user.Password)
-	log.Printf("\tpassword from request: %v", u.Password)
-
 	// check if password has changed as we don't want to encrypt the encrypted password
 	// and accidentally overwrite the old password with that
 	samePwd := user.Password == u.Password
@@ -125,7 +121,6 @@ func (db *DB) UpdateUser(u User) (User, error) {
 	user.IsChirpyRed = u.IsChirpyRed
 
 	if !samePwd {
-		log.Println("\tpassword has changed")
 		password, err := bcrypt.GenerateFromPassword([]byte(u.Password), -1)
 		if err != nil {
 			return User{}, err

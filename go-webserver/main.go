@@ -32,7 +32,6 @@ var metricsConfig = routes.MetricsConfig{
 
 func main() {
 	godotenv.Load()
-	log.Printf("Secret: %v", os.Getenv("JWT_SECRET"))
 
 	r := chi.NewRouter()
 	r.Use(chimw.Logger)

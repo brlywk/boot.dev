@@ -3,7 +3,6 @@ package routes
 import (
 	"brlywk/bootdev/webserver/helper"
 	"encoding/json"
-	"log"
 	"net/http"
 )
 
@@ -37,8 +36,6 @@ func postPolkaWebhookHandler(w http.ResponseWriter, r *http.Request) {
 		helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-
-	log.Printf("WebHook received: %v", reqBody)
 
 	// only interested in user.upgraded events
 	if reqBody.Event != UserUpgraded {

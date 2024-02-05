@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"log"
 	"sort"
 )
 
@@ -10,8 +9,6 @@ import (
 func (db *DB) CreateChirp(body string, authorId int) (Chirp, error) {
 	db.mutex.Lock()
 	defer db.mutex.Unlock()
-
-	log.Println("\nCreating Chirp")
 
 	dbstruct, err := db.loadDB()
 	if err != nil {
@@ -59,6 +56,30 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 	return sortedChirps, nil
 }
 
+func (db *DB) GetChirpsByAuthorId(authorId int) ([]Chirp, error) {
+	db.mutex.RLock()
+	defer db.mutex.RUnlock()
+
+	dbstruct, err := db.loadDB()
+	if err != nil {
+		return []Chirp{}, err
+	}
+
+	sortedChirpsByAuthor := []Chirp{}
+
+	for _, c := range dbstruct.Chirps {
+		if c.AuthorId == authorId {
+			sortedChirpsByAuthor = append(sortedChirpsByAuthor, c)
+		}
+	}
+
+	sort.Slice(sortedChirpsByAuthor, func(i, j int) bool {
+		return j > i
+	})
+
+	return sortedChirpsByAuthor, nil
+}
+
 // Retreives a single chirp from the database
 func (db *DB) GetChirp(id int) (Chirp, error) {
 	db.mutex.RLock()
@@ -80,8 +101,8 @@ func (db *DB) GetChirp(id int) (Chirp, error) {
 }
 
 func (db *DB) DeleteChirp(id int, authorId int) error {
-	db.mutex.RLock()
-	defer db.mutex.RUnlock()
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
 
 	dbstruct, err := db.loadDB()
 	if err != nil {
