@@ -2,7 +2,14 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"sort"
+	"strings"
+)
+
+const (
+	SortOrderAscending  = "asc"
+	SortOrderDescending = "desc"
 )
 
 // Create a new chirp and save it in the database
@@ -33,8 +40,32 @@ func (db *DB) CreateChirp(body string, authorId int) (Chirp, error) {
 	return chirp, nil
 }
 
+// Helper to sort chirps either ASCending or DESCending
+func sortChirps(chirps *[]Chirp, order string) {
+	order = strings.ToLower(order)
+	if order != SortOrderAscending && order != SortOrderDescending {
+		return
+	}
+
+	var sortFn func(int, int) bool
+	asc := func(i, j int) bool {
+		return (*chirps)[j].Id > (*chirps)[i].Id
+	}
+	desc := func(i, j int) bool {
+		return (*chirps)[j].Id < (*chirps)[i].Id
+	}
+
+	if order == "asc" {
+		sortFn = asc
+	} else {
+		sortFn = desc
+	}
+
+	sort.Slice(*chirps, sortFn)
+}
+
 // Retrieves all chirps from the database
-func (db *DB) GetChirps() ([]Chirp, error) {
+func (db *DB) GetChirps(order string) ([]Chirp, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
@@ -49,14 +80,13 @@ func (db *DB) GetChirps() ([]Chirp, error) {
 		sortedChirps = append(sortedChirps, c)
 	}
 
-	sort.Slice(sortedChirps, func(i, j int) bool {
-		return j > i
-	})
+	sortChirps(&sortedChirps, order)
+	log.Printf("[GetChirps]\tOrder: %v\n%v", order, sortedChirps)
 
 	return sortedChirps, nil
 }
 
-func (db *DB) GetChirpsByAuthorId(authorId int) ([]Chirp, error) {
+func (db *DB) GetChirpsByAuthorId(authorId int, order string) ([]Chirp, error) {
 	db.mutex.RLock()
 	defer db.mutex.RUnlock()
 
@@ -73,9 +103,8 @@ func (db *DB) GetChirpsByAuthorId(authorId int) ([]Chirp, error) {
 		}
 	}
 
-	sort.Slice(sortedChirpsByAuthor, func(i, j int) bool {
-		return j > i
-	})
+	sortChirps(&sortedChirpsByAuthor, order)
+	log.Printf("[GetChirps]\tOrder: %v\n%v", order, sortedChirpsByAuthor)
 
 	return sortedChirpsByAuthor, nil
 }

@@ -21,6 +21,11 @@ type ChirpRequestBody struct {
 
 func getAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
 	aIdStr := r.URL.Query().Get("author_id")
+	sortOrder := r.URL.Query().Get("sort")
+	if sortOrder == "" {
+		sortOrder = db.SortOrderAscending
+	}
+
 	var chirps []db.Chirp
 	var err error
 
@@ -32,13 +37,13 @@ func getAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		chirps, err = apiConfig.Db.GetChirpsByAuthorId(authorId)
+		chirps, err = apiConfig.Db.GetChirpsByAuthorId(authorId, sortOrder)
 		if err != nil {
 			helper.RespondWithError(w, http.StatusNotFound, err.Error())
 			return
 		}
 	} else {
-		chirps, err = apiConfig.Db.GetChirps()
+		chirps, err = apiConfig.Db.GetChirps(sortOrder)
 		if err != nil {
 			helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
 			return

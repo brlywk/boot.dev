@@ -11,12 +11,15 @@ import (
 type LoginRequestBody struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	// ExpiresInSeconds int    `json:"expires_in_seconds"`
 }
 
 type LoginResponseBody struct {
-	ID          int    `json:"id"`
-	Email       string `json:"email"`
-	IsChirpyRed bool   `json:"is_chirpy_red"`
+	ID           int    `json:"id"`
+	Email        string `json:"email"`
+	IsChirpyRed  bool   `json:"is_chirpy_red"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 // ----- Handlers --------------------------------
@@ -41,24 +44,24 @@ func postLoginHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = helper.CreateToken(apiConfig.JwtSecret, user.Id, apiConfig.TokenSettings.AccessIssuer, apiConfig.TokenSettings.AccessExpiresIn)
+	accessTokenString, err := helper.CreateToken(apiConfig.JwtSecret, user.Id, apiConfig.TokenSettings.AccessIssuer, apiConfig.TokenSettings.AccessExpiresIn)
 	if err != nil {
 		helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	_, err = helper.CreateToken(apiConfig.JwtSecret, user.Id, apiConfig.TokenSettings.RefreshIssuer, apiConfig.TokenSettings.RefreshExpiresIn)
+	refreshTokenString, err := helper.CreateToken(apiConfig.JwtSecret, user.Id, apiConfig.TokenSettings.RefreshIssuer, apiConfig.TokenSettings.RefreshExpiresIn)
 	if err != nil {
 		helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	loginResp := LoginResponseBody{
-		ID:          user.Id,
-		Email:       user.Email,
-		IsChirpyRed: user.IsChirpyRed,
-		// Token:        accessTokenString,
-		// RefreshToken: refreshTokenString,
+		ID:           user.Id,
+		Email:        user.Email,
+		IsChirpyRed:  user.IsChirpyRed,
+		Token:        accessTokenString,
+		RefreshToken: refreshTokenString,
 	}
 
 	helper.RespondWithJson(w, http.StatusOK, loginResp)
