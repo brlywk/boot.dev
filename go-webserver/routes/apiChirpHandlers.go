@@ -4,7 +4,6 @@ import (
 	"brlywk/bootdev/webserver/db"
 	"brlywk/bootdev/webserver/helper"
 	"encoding/json"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,13 +20,34 @@ type ChirpRequestBody struct {
 // ----- Handlers --------------------------------
 
 func getAllChirpsHandler(w http.ResponseWriter, r *http.Request) {
-	chirps, err := apiConfig.Db.GetChirps()
-	log.Printf("Chirps loaded: %v", chirps)
+	aIdStr := r.URL.Query().Get("author_id")
+	sortOrder := r.URL.Query().Get("sort")
+	if sortOrder == "" {
+		sortOrder = db.SortOrderAscending
+	}
 
-	if err != nil {
-		log.Printf("Unable to load chirps: %v", err)
-		helper.RespondWithError(w, http.StatusInternalServerError, "Something went wrong")
-		return
+	var chirps []db.Chirp
+	var err error
+
+	// endpoint has been called with query param author_id
+	if aIdStr != "" {
+		authorId, err := strconv.Atoi(aIdStr)
+		if err != nil {
+			helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+
+		chirps, err = apiConfig.Db.GetChirpsByAuthorId(authorId, sortOrder)
+		if err != nil {
+			helper.RespondWithError(w, http.StatusNotFound, err.Error())
+			return
+		}
+	} else {
+		chirps, err = apiConfig.Db.GetChirps(sortOrder)
+		if err != nil {
+			helper.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 	}
 
 	helper.RespondWithJson(w, http.StatusOK, chirps)
@@ -37,7 +57,7 @@ func getChirpByIdHandler(w http.ResponseWriter, r *http.Request) {
 	strId := chi.URLParam(r, "chirpid")
 	id, err := strconv.Atoi(strId)
 	if err != nil {
-		helper.RespondWithError(w, http.StatusBadRequest, "Id must be a number")
+		helper.RespondWithError(w, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -75,14 +95,12 @@ func postChirpHandler(w http.ResponseWriter, r *http.Request) {
 
 	newChirp, err := apiConfig.Db.CreateChirp(reqBody.Body, user.Id)
 	if err != nil {
-		log.Printf("Error: %v", err)
 		helper.RespondWithError(w, http.StatusInternalServerError, "Something went wrong")
 		return
 	}
 
 	valid := validateChirp(&newChirp)
 	if !valid {
-		log.Printf("Error: %v", err)
 		helper.RespondWithError(w, http.StatusBadRequest, "Chirp too long")
 		return
 	}

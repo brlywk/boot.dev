@@ -17,8 +17,8 @@ func (db *DB) IsTokenRevoked(token string) (bool, error) {
 }
 
 func (db *DB) RevokeToken(token string) (time.Time, error) {
-	db.mutex.RLock()
-	defer db.mutex.RUnlock()
+	db.mutex.Lock()
+	defer db.mutex.Unlock()
 
 	dbstruct, err := db.loadDB()
 	if err != nil {
